@@ -14,7 +14,7 @@ Pick **AWS**, **Azure** or **Google Cloud**, drag services onto a canvas, wire t
 - Cost breakdown by service group, plus a cross-cloud comparison of the same diagram
 - Your diagram is saved in your browser automatically
 
-The live site uses Google Analytics and Hotjar to see how it's used. Diagrams aren't sent to any server of ours, as there is no backend.
+The app has no backend of its own, but the live site uses Google Analytics and Hotjar to see how it's used. Hotjar session recordings can include what's on screen, such as your diagram.
 
 ## Accuracy
 
