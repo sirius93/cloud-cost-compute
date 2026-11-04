@@ -1,4 +1,4 @@
-# Cloud Cost Compute
+# Cloud Cost Estimator
 
 Sketch your cloud architecture and see roughly what it will cost.
 
@@ -20,7 +20,7 @@ The app has no backend of its own, but the live site uses Google Analytics and H
 
 Prices are **approximate on-demand list prices** for one region per cloud (us-east-1, East US, us-central1), copied by hand from the providers' public pricing pages. Tax, free tiers, reserved/committed-use discounts and some secondary charges are not included. Use this to compare designs and catch big-ticket items, then confirm with the provider's own calculator before committing a budget.
 
-Spotted a wrong price? Please [open an issue](https://github.com/sirius93/cloud-cost-compute/issues) or a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Spotted a wrong price? Please [open an issue](https://github.com/sirius93/cloud-cost-estimator/issues) or a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Run locally
 

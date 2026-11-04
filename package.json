@@ -1,5 +1,5 @@
 {
-  "name": "cloud-cost-compute",
+  "name": "cloud-cost-estimator",
   "private": true,
   "type": "module",
   "scripts": {

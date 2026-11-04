@@ -255,7 +255,7 @@ function Editor() {
     <CloudCtx.Provider value={cloud}>
       <div className="app">
         <header>
-          <h1>Cloud Cost Compute</h1>
+          <h1>Cloud Cost Estimator</h1>
           <div className="seg" role="group" aria-label="Cloud provider">
             {Object.entries(CLOUDS).map(([id, c]) => (
               <button key={id} aria-pressed={cloud === id} onClick={() => setCloud(id)}>{c.name}</button>
@@ -268,7 +268,7 @@ function Editor() {
           <a className="link icon" href="https://nandan.dev/" target="_blank" rel="noopener noreferrer" aria-label="nandan.dev" title="nandan.dev">
             <House size={16} aria-hidden />
           </a>
-          <a className="link icon" href="https://github.com/sirius93/cloud-cost-compute" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository" title="GitHub repository">
+          <a className="link icon" href="https://github.com/sirius93/cloud-cost-estimator" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository" title="GitHub repository">
             <GitHubMark />
           </a>
           <a className="link coffee" href="https://buymeacoffee.com/siri" target="_blank" rel="noopener noreferrer">

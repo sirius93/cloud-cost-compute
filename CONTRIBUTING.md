@@ -5,8 +5,8 @@ Thanks for helping. Price corrections are the most useful contribution, followed
 ## Getting started
 
 ```sh
-git clone https://github.com/sirius93/cloud-cost-compute.git
-cd cloud-cost-compute
+git clone https://github.com/sirius93/cloud-cost-estimator.git
+cd cloud-cost-estimator
 npm install
 npm run dev
 ```
@@ -49,7 +49,7 @@ A service is a generic **kind** that maps onto every cloud, so diagrams can be r
 
 ## Reporting issues
 
-[Open an issue](https://github.com/sirius93/cloud-cost-compute/issues) with:
+[Open an issue](https://github.com/sirius93/cloud-cost-estimator/issues) with:
 
 - the cloud, service and settings you used
 - the cost the app showed and the cost you expected
