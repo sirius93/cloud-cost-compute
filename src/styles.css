@@ -36,6 +36,9 @@ label.check input { width: auto; }
 }
 header { grid-area: head; display: flex; align-items: center; gap: 12px; padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
 .spacer { flex: 1; }
+.link { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 6px; color: inherit; text-decoration: none; }
+.link:hover { border-color: var(--accent); }
+.link.coffee { background: #ffdd00; border-color: #ffdd00; color: #1b1f24; font-weight: 600; }
 .seg { display: flex; }
 .seg button { border-radius: 0; margin-left: -1px; }
 .seg button:first-child { border-radius: 6px 0 0 6px; }
