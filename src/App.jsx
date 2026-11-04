@@ -4,7 +4,7 @@ import {
   addEdge, useNodesState, useEdgesState, useReactFlow, useConnection,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { Server, Container, Boxes, Zap, Database, MemoryStick, Archive, HardDrive, Package, Split, Router, Globe, Inbox, ScrollText, Users, Trash2, Coffee } from 'lucide-react'
+import { Server, Container, Boxes, Zap, Database, MemoryStick, Archive, HardDrive, Package, Split, Router, Globe, Inbox, ScrollText, Users, Trash2, Coffee, House } from 'lucide-react'
 import { CLOUDS, KINDS, UNITS, nodeCost, edgeCost, edgeRate, hourlyPrice, sizeOf, sizesOf, totals } from './cost.js'
 
 const ICONS = {
@@ -265,9 +265,11 @@ function Editor() {
           <span className="spacer" />
           <button onClick={() => { setNodes(SAMPLE.nodes); setEdges(SAMPLE.edges) }}>Load sample</button>
           <button onClick={() => { setNodes([]); setEdges([]) }}>Clear</button>
-          <a className="link" href="https://nandan.dev/" target="_blank" rel="noopener noreferrer">nandan.dev</a>
-          <a className="link" href="https://github.com/sirius93/cloud-cost-compute" target="_blank" rel="noopener noreferrer">
-            <GitHubMark /> GitHub
+          <a className="link icon" href="https://nandan.dev/" target="_blank" rel="noopener noreferrer" aria-label="nandan.dev" title="nandan.dev">
+            <House size={16} aria-hidden />
+          </a>
+          <a className="link icon" href="https://github.com/sirius93/cloud-cost-compute" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository" title="GitHub repository">
+            <GitHubMark />
           </a>
           <a className="link coffee" href="https://buymeacoffee.com/siri" target="_blank" rel="noopener noreferrer">
             <Coffee size={16} aria-hidden /> Buy me a coffee
