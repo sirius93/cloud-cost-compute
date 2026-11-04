@@ -4,7 +4,7 @@ Sketch your cloud architecture and see roughly what it will cost.
 
 Pick **AWS**, **Azure** or **Google Cloud**, drag services onto a canvas, wire them together, and set how big they are and how long they run. The total updates as you go, and the same diagram is priced on all three clouds side by side.
 
-**Try it:** https://nandan.dev/cloud-cost-compute/
+**Try it:** [https://nandan.dev/cloud-cost-estimator/](https://nandan.dev/cloud-cost-estimator/)
 
 ## Features
 
