@@ -14,6 +14,8 @@ Pick **AWS**, **Azure** or **Google Cloud**, drag services onto a canvas, wire t
 - Cost breakdown by service group, plus a cross-cloud comparison of the same diagram
 - Your diagram is saved in your browser automatically
 
+The live site uses Google Analytics and Hotjar to see how it's used. Diagrams aren't sent to any server of ours, as there is no backend.
+
 ## Accuracy
 
 Prices are **approximate on-demand list prices** for one region per cloud (us-east-1, East US, us-central1), copied by hand from the providers' public pricing pages. Tax, free tiers, reserved/committed-use discounts and some secondary charges are not included. Use this to compare designs and catch big-ticket items, then confirm with the provider's own calculator before committing a budget.
