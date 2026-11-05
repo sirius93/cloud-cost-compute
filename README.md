@@ -12,9 +12,22 @@ Pick **AWS**, **Azure** or **Google Cloud**, drag services onto a canvas, wire t
 - Per-service settings: instance size, quantity, run time (hours, days or months), and usage such as GB stored, requests, cache hit ratio or memory per task
 - Wires carry data transfer (GB/month). Internet egress and cross-zone traffic are charged; traffic within one zone is free
 - Cost breakdown by service group, plus a cross-cloud comparison of the same diagram
+- **Import Terraform:** add `.tf` and `.tfvars` files, a whole folder, or pasted code, and get an editable diagram with its services, sizes, quantities and connections
 - Your diagram is saved in your browser automatically
 
 The app has no backend of its own, but the live site uses Google Analytics and Hotjar to see how it's used. Hotjar session recordings can include what's on screen, such as your diagram.
+
+## Importing Terraform
+
+Click **Import Terraform** to turn existing configuration into a diagram you can edit and price. Files are read in your browser and never uploaded, and the import dialog is excluded from Hotjar recordings. Resource names shown on the canvas are excluded too.
+
+AWS, Azure and Google Cloud resources are supported. An import report lists everything that needs your attention:
+
+- **Usage is a placeholder.** Terraform doesn't say how many GB or requests you'll have, so services billed on usage start with default amounts and wires start at 10 GB/month. The total isn't reliable until you set them.
+- **Sizes not in the price list** are priced as the closest match and flagged.
+- **Unmapped resources** are listed as not priced, so you can see what the total leaves out.
+- **Not evaluated:** modules aren't expanded, `for_each` is priced as one, and conditional or computed values are flagged instead of guessed. Terraform JSON isn't supported. Each folder is read on its own, so same-named resources in `dev/` and `prod/` stay separate.
+- **Not included:** root disks and database storage that are set inside another resource.
 
 ## Accuracy
 
@@ -43,6 +56,8 @@ React with [React Flow](https://reactflow.dev/) for the canvas and [Lucide](http
 |---|---|
 | [src/cost.js](src/cost.js) | Service types, prices for each cloud, and all cost math. Pure JavaScript with no React |
 | [src/cost.check.js](src/cost.check.js) | Assertions for the cost math (`npm test`) |
+| [src/terraform.js](src/terraform.js) | Reads Terraform and builds the diagram: the resource mapping, wiring and layout. No React |
+| [src/terraform.check.js](src/terraform.check.js) | Assertions for the Terraform import (also run by `npm test`) |
 | [src/App.jsx](src/App.jsx) | Canvas, palette, settings panel and cost estimate |
 | [src/styles.css](src/styles.css) | Styles, including dark mode |
 

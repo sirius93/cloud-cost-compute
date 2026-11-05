@@ -116,6 +116,8 @@ export const CLOUDS = {
   },
 }
 
+export const newData = kind => ({ kind, size: 0, qty: 1, amount: KINDS[kind].defaultAmount ?? 0, duration: 1, unit: 'months', ...KINDS[kind].defaults })
+
 export const sizesOf = (cloud, kind) => CLOUDS[cloud].services[kind]?.sizes ?? []
 
 // Size index is shared across clouds; clamp in case the new cloud has fewer tiers.

@@ -1,11 +1,12 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import {
   ReactFlow, ReactFlowProvider, Background, Controls, Handle, Position,
   addEdge, useNodesState, useEdgesState, useReactFlow, useConnection,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { Server, Container, Boxes, Zap, Database, MemoryStick, Archive, HardDrive, Package, Split, Router, Globe, Inbox, ScrollText, Users, Trash2, Coffee, House } from 'lucide-react'
-import { CLOUDS, KINDS, UNITS, nodeCost, edgeCost, edgeRate, hourlyPrice, sizeOf, sizesOf, totals } from './cost.js'
+import { Server, Container, Boxes, Zap, Database, MemoryStick, Archive, HardDrive, Package, Split, Router, Globe, Inbox, ScrollText, Users, Trash2, Coffee, House, FileCode, X } from 'lucide-react'
+import { CLOUDS, KINDS, UNITS, newData, nodeCost, edgeCost, edgeRate, hourlyPrice, sizeOf, sizesOf, totals } from './cost.js'
+import { importTerraform, isTerraformFile, EXAMPLE_TF } from './terraform.js'
 
 const ICONS = {
   compute: Server, container: Container, k8s: Boxes, serverless: Zap, database: Database, cache: MemoryStick,
@@ -25,7 +26,6 @@ const GitHubMark = () => (
   </svg>
 )
 
-const newData = kind => ({ kind, size: 0, qty: 1, amount: KINDS[kind].defaultAmount ?? 0, duration: 1, unit: 'months', ...KINDS[kind].defaults })
 const svcName = (cloud, kind) => CLOUDS[cloud].services[kind]?.name ?? KINDS[kind].label
 
 const node = (id, kind, x, y, extra) => ({ id, type: 'service', position: { x, y }, data: { ...newData(kind), ...extra } })
@@ -71,6 +71,7 @@ function ServiceNode({ data }) {
       <Icon size={22} aria-hidden />
       <div className="node-text">
         <b>{svcName(cloud, data.kind)}</b>
+        {data.label && <small className="node-label" data-hj-suppress>{data.label}</small>}
         <small>{describe(cloud, data)}</small>
       </div>
       {k.model && <span className="node-cost">{usd(nodeCost(cloud, data))}</span>}
@@ -112,6 +113,7 @@ function NodeConfig({ cloud, data: d, patch, remove }) {
   return (
     <section className="card">
       <h2>{svcName(cloud, d.kind)}</h2>
+      {d.source && <p className="muted fine source" data-hj-suppress>From Terraform: {d.source}</p>}
       {k.model === 'hourly' && <>
         {sizesOf(cloud, d.kind).length > 0 && <label>Size
           <select value={Math.min(d.size, sizesOf(cloud, d.kind).length - 1)} onChange={e => patch({ size: Number(e.target.value) })}>
@@ -212,12 +214,91 @@ function Estimate({ cloud, nodes, edges }) {
   )
 }
 
+// data-hj-suppress: Terraform can hold names and secrets, so keep it out of Hotjar session recordings.
+function TerraformDialog({ onImport, onClose }) {
+  const ref = useRef(null)
+  const [files, setFiles] = useState([])
+  const [text, setText] = useState('')
+  const [problem, setProblem] = useState(null)
+  useEffect(() => { ref.current.showModal() }, [])
+
+  const addFiles = async list => {
+    const read = await Promise.all([...list]
+      .map(f => ({ f, name: f.webkitRelativePath || f.name }))
+      .filter(({ name }) => isTerraformFile(name))
+      .map(async ({ f, name }) => ({ name, text: await f.text() })))
+    setProblem(read.length ? null : { message: 'No .tf or .tfvars files found there.', warnings: [] })
+    setFiles(fs => [...fs.filter(a => !read.some(b => b.name === a.name)), ...read])
+  }
+  const build = () => {
+    const all = text.trim() ? [...files, { name: 'pasted.tf', text }] : files
+    const result = importTerraform(all)
+    if (result.nodes.length) onImport(result)
+    else setProblem({ message: 'No services that can be priced were found.', warnings: result.report.warnings })
+  }
+  return (
+    <dialog ref={ref} className="tf-dialog" onClose={onClose} data-hj-suppress
+      onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); addFiles(e.dataTransfer.files) }}>
+      <h2>Import Terraform</h2>
+      <p className="muted">Add one or more files, or a whole folder. They're read in your browser and never uploaded.</p>
+      <div className="row">
+        <label className="link">Choose files
+          <input type="file" className="visually-hidden" multiple accept=".tf,.tfvars,.json" onChange={e => addFiles(e.target.files)} />
+        </label>
+        <label className="link">Choose folder
+          <input type="file" className="visually-hidden" webkitdirectory="" onChange={e => addFiles(e.target.files)} />
+        </label>
+        <button onClick={() => setText(EXAMPLE_TF)}>Try an example</button>
+      </div>
+      {files.length > 0 && <ul className="tf-files">
+        {files.map(f => <li key={f.name}>{f.name}
+          <button aria-label={`Remove ${f.name}`} onClick={() => setFiles(fs => fs.filter(x => x !== f))}><X size={12} aria-hidden /></button>
+        </li>)}
+      </ul>}
+      <label>Or paste Terraform here
+        <textarea rows={12} spellCheck={false} value={text} onChange={e => setText(e.target.value)} placeholder={'resource "aws_instance" "web" {\n  instance_type = "t3.medium"\n}'} />
+      </label>
+      {problem && <div className="tf-problem" role="alert">
+        {problem.message}
+        {problem.warnings.map(w => <div key={w}>{w}</div>)}
+      </div>}
+      <div className="row tf-actions">
+        <button onClick={() => ref.current.close()}>Cancel</button>
+        <button className="primary" disabled={!files.length && !text.trim()} onClick={build}>Build diagram</button>
+      </div>
+      <p className="muted fine">Building replaces the diagram currently on the canvas.</p>
+    </dialog>
+  )
+}
+
+function ImportReport({ report, services, wires, onClose }) {
+  return (
+    <section className="card report" data-hj-suppress>
+      <button className="close" aria-label="Dismiss import report" onClick={onClose}><X size={14} aria-hidden /></button>
+      <h2>Terraform import</h2>
+      <p>{services} services and {wires} wires from {report.resources} resources. You can edit all of it.</p>
+      <ul>
+        {report.placeholders > 0 && <li><b>{report.placeholders} usage-billed {report.placeholders === 1 ? 'service uses a placeholder' : 'services use placeholder'} amounts.</b> Terraform doesn't say how many GB or requests you'll have, so the total isn't reliable until you set them.</li>}
+        <li>Wires default to 10 GB/month. Set real traffic on each one.</li>
+        {report.inferredInternet && <li>The Internet node wasn't in your Terraform. It was added in front of your public entry points.</li>}
+        {report.warnings.map(w => <li key={w}>{w}</li>)}
+      </ul>
+      {report.notPriced.length > 0 && <details>
+        <summary>{report.notPriced.length} {report.notPriced.length === 1 ? 'resource' : 'resources'} not priced, which may cost money</summary>
+        <ul>{report.notPriced.map(k => <li key={k}>{k}</li>)}</ul>
+      </details>}
+    </section>
+  )
+}
+
 function Editor() {
   const [initial] = useState(load)
   const [cloud, setCloud] = useState(initial.cloud)
   const [nodes, setNodes, onNodesChange] = useNodesState(initial.nodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initial.edges)
-  const { screenToFlowPosition } = useReactFlow()
+  const { screenToFlowPosition, fitView } = useReactFlow()
+  const [importing, setImporting] = useState(false)
+  const [imported, setImported] = useState(null)
 
   useEffect(() => {
     try { localStorage.setItem(STORE, JSON.stringify({ cloud, nodes, edges })) } catch {}
@@ -243,6 +324,15 @@ function Editor() {
     setEdges(es => es.filter(e => e.source !== id && e.target !== id))
   }
 
+  const onImport = ({ cloud, nodes, edges, report }) => {
+    setCloud(cloud)
+    setNodes(nodes)
+    setEdges(edges)
+    setImported({ report, services: nodes.length, wires: edges.length })
+    setImporting(false)
+    setTimeout(() => fitView({ padding: 0.1 }), 50) // once the new nodes have been measured
+  }
+
   const byId = Object.fromEntries(nodes.map(n => [n.id, n.data]))
   const shownEdges = edges.map(e => {
     const a = byId[e.source], b = byId[e.target], gb = e.data?.gb ?? 0
@@ -263,8 +353,9 @@ function Editor() {
           </div>
           <span className="muted">{CLOUDS[cloud].region}</span>
           <span className="spacer" />
-          <button onClick={() => { setNodes(SAMPLE.nodes); setEdges(SAMPLE.edges) }}>Load sample</button>
-          <button onClick={() => { setNodes([]); setEdges([]) }}>Clear</button>
+          <button className="primary with-icon" onClick={() => setImporting(true)}><FileCode size={14} aria-hidden /> Import Terraform</button>
+          <button onClick={() => { setNodes(SAMPLE.nodes); setEdges(SAMPLE.edges); setImported(null) }}>Load sample</button>
+          <button onClick={() => { setNodes([]); setEdges([]); setImported(null) }}>Clear</button>
           <a className="link icon" href="https://nandan.dev/" target="_blank" rel="noopener noreferrer" aria-label="nandan.dev" title="nandan.dev">
             <House size={16} aria-hidden />
           </a>
@@ -289,6 +380,7 @@ function Editor() {
           </ReactFlow>
         </main>
         <aside>
+          {imported && <ImportReport {...imported} onClose={() => setImported(null)} />}
           {selNode
             ? <NodeConfig cloud={cloud} data={selNode.data} patch={p => patchNode(selNode.id, p)} remove={() => removeNode(selNode.id)} />
             : selEdge
@@ -300,6 +392,7 @@ function Editor() {
                 </section>}
           <Estimate cloud={cloud} nodes={nodes} edges={edges} />
         </aside>
+        {importing && <TerraformDialog onImport={onImport} onClose={() => setImporting(false)} />}
       </div>
     </CloudCtx.Provider>
   )

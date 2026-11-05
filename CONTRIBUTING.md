@@ -41,6 +41,16 @@ A service is a generic **kind** that maps onto every cloud, so diagrams can be r
 4. **Pick an icon** from [Lucide](https://lucide.dev/icons/) and add it to `ICONS` in [src/App.jsx](src/App.jsx).
 5. **Add a test** in [src/cost.check.js](src/cost.check.js) that calculates one realistic configuration by hand.
 
+## Supporting a Terraform resource
+
+All of this is in [src/terraform.js](src/terraform.js), with tests in [src/terraform.check.js](src/terraform.check.js).
+
+- **It's a billable service:** add it to `SPECS`, naming the service kind and the attributes that hold its size, quantity and so on.
+- **Traffic flows through it but it isn't billed** (like a target group): add it to `CONNECTORS`, and services linked through it get a wire. Never add shared infrastructure such as VPCs or subnets, or every service ends up connected.
+- **It's free:** add it to `NO_COST`, so it isn't reported as "not priced".
+
+If a value can't be read reliably, add a warning to the report instead of guessing.
+
 ## Code style
 
 - Keep the cost math in `cost.js`, free of React, so it can be tested with plain Node.
