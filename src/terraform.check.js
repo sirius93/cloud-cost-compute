@@ -169,6 +169,17 @@ assert.equal(sizeOf('gcp', find(gcp, 'google_sql_database_instance.s'))[0], 'db-
 assert.equal(sizeOf('gcp', find(gcp, 'google_redis_instance.r'))[0], 'Standard 5 GB')
 const run = find(gcp, 'google_cloud_run_v2_service.run')
 assert.deepEqual([run.vcpu, run.memGiB, run.concurrency], [2, 0.5, 40])
+// An HTTP and HTTPS pair of global rules shares one flat rate; a regional rule adds its own
+const rules = tf(`
+resource "google_compute_global_forwarding_rule" "http" {}
+resource "google_compute_global_forwarding_rule" "https" {}
+resource "google_compute_forwarding_rule" "r" {}
+`)
+assert.equal(sizeOf('gcp', find(rules, 'google_compute_global_forwarding_rule.http'))[0], 'Global forwarding rule')
+assert.equal(sizeOf('gcp', find(rules, 'google_compute_forwarding_rule.r'))[0], 'Regional forwarding rule')
+assert.deepEqual(rules.report.warnings, [])
+assert.ok(Math.abs(totals('gcp', rules.nodes, rules.edges).groups.Network - 0.05 * 730) < 1e-9)
+
 assert.equal(find(gcp, 'google_compute_backend_service.plain'), undefined)
 assert.equal(find(gcp, 'google_compute_backend_bucket.cached').kind, 'cdn')
 

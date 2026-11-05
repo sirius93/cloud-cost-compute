@@ -5,7 +5,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { Server, Container, Boxes, Zap, Database, MemoryStick, Archive, HardDrive, Package, Split, Router, Globe, Inbox, ScrollText, Users, Trash2, Coffee, House, FileCode, X } from 'lucide-react'
-import { CLOUDS, KINDS, UNITS, newData, nodeCost, edgeCost, edgeRate, hourlyPrice, sizeOf, sizesOf, totals } from './cost.js'
+import { CLOUDS, KINDS, UNITS, newData, nodeCosts, edgeCost, edgeRate, hourlyPrice, sizeOf, sizesOf, totals } from './cost.js'
 import { importTerraform, isTerraformFile, EXAMPLE_TF } from './terraform.js'
 
 const ICONS = {
@@ -18,6 +18,7 @@ const STORE = 'ccc-diagram'
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format
 const rate = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 4 }).format
 const CloudCtx = createContext('aws')
+const CostsCtx = createContext({})
 
 // lucide-react no longer ships brand icons, so the GitHub mark is inlined.
 const GitHubMark = () => (
@@ -59,8 +60,9 @@ function describe(cloud, d) {
   return `${what} · ${d.duration} ${d.unit}`
 }
 
-function ServiceNode({ data }) {
+function ServiceNode({ id, data }) {
   const cloud = useContext(CloudCtx)
+  const costs = useContext(CostsCtx)
   const k = KINDS[data.kind]
   const Icon = ICONS[data.kind]
   // While a wire is being dragged, the target handle covers the whole node so you can drop anywhere on it.
@@ -74,7 +76,7 @@ function ServiceNode({ data }) {
         {data.label && <small className="node-label" data-hj-suppress>{data.label}</small>}
         <small>{describe(cloud, data)}</small>
       </div>
-      {k.model && <span className="node-cost">{usd(nodeCost(cloud, data))}</span>}
+      {k.model && <span className="node-cost">{usd(costs[id])}</span>}
       <Handle type="source" position={Position.Right} />
     </div>
   )
@@ -107,7 +109,7 @@ const numInput = (value, onChange) => ({
   type: 'number', min: 0, step: 'any', value, onChange: e => onChange(Math.max(0, Number(e.target.value) || 0)),
 })
 
-function NodeConfig({ cloud, data: d, patch, remove }) {
+function NodeConfig({ cloud, data: d, cost, patch, remove }) {
   const k = KINDS[d.kind]
   const svc = CLOUDS[cloud].services[d.kind]
   return (
@@ -143,6 +145,10 @@ function NodeConfig({ cloud, data: d, patch, remove }) {
           ? `${rate(svc.cpuSecond)}/vCPU-s + ${rate(svc.gibSecond)}/GiB-s while handling requests. Minimum instances not included.`
           : `${rate(svc.gibSecond)}/GiB-s; CPU scales with memory. One request per instance.`}
       </p>}
+      {d.kind === 'lb' && svc.pool && <p className="muted fine">
+        {rate(sizeOf(cloud, d)[1])}/h covers the first {svc.pool.included} rules of each type, then {rate(svc.pool.extra)}/h per extra rule.
+        The charge is split across this diagram's rules, which are treated as one project.
+      </p>}
       {d.kind === 'cdn' && <p className="muted fine">
         Origin serves {Math.round(d.amount * (1 - Math.min(d.hit, 100) / 100))} GB/mo of cache misses
         (fill {rate(svc.fill)}/GB, {rate(svc.perMReq)} per million requests{svc.base ? `, ${usd(svc.base)}/mo base fee` : ''}).
@@ -157,7 +163,7 @@ function NodeConfig({ cloud, data: d, patch, remove }) {
         </span>
       </label>}
       {k.model
-        ? <p className="big">{usd(nodeCost(cloud, d))}</p>
+        ? <p className="big">{usd(cost)}</p>
         : <p className="muted">Wires to this node are billed at the internet egress rate ({rate(CLOUDS[cloud].egress)}/GB).</p>}
       <button className="danger" onClick={remove}><Trash2 size={14} aria-hidden /> Remove</button>
     </section>
@@ -346,9 +352,11 @@ function Editor() {
   })
   const selNode = nodes.find(n => n.selected)
   const selEdge = !selNode && edges.find(e => e.selected && byId[e.source] && byId[e.target])
+  const costs = nodeCosts(cloud, nodes)
 
   return (
     <CloudCtx.Provider value={cloud}>
+    <CostsCtx.Provider value={costs}>
       <div className="app">
         <header>
           <span className="brand">Cloud Cost Estimator</span>
@@ -389,7 +397,7 @@ function Editor() {
         <aside>
           {imported && <ImportReport {...imported} onClose={() => setImported(null)} />}
           {selNode
-            ? <NodeConfig cloud={cloud} data={selNode.data} patch={p => patchNode(selNode.id, p)} remove={() => removeNode(selNode.id)} />
+            ? <NodeConfig cloud={cloud} data={selNode.data} cost={costs[selNode.id]} patch={p => patchNode(selNode.id, p)} remove={() => removeNode(selNode.id)} />
             : selEdge
               ? <EdgeConfig cloud={cloud} edge={selEdge} a={byId[selEdge.source]} b={byId[selEdge.target]}
                   patch={p => patchEdge(selEdge.id, p)} remove={() => setEdges(es => es.filter(e => e.id !== selEdge.id))} />
@@ -401,6 +409,7 @@ function Editor() {
         </aside>
         {importing && <TerraformDialog onImport={onImport} onClose={() => setImporting(false)} />}
       </div>
+    </CostsCtx.Provider>
     </CloudCtx.Provider>
   )
 }

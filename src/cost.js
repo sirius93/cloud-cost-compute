@@ -109,7 +109,7 @@ export const CLOUDS = {
       cache: { name: 'Memorystore Redis', sizes: [['Basic 1 GB', 0.049], ['Standard 5 GB', 0.27]] },
       object: { name: 'Cloud Storage', price: 0.020 },
       block: { name: 'Persistent Disk', price: 0.10 },
-      lb: { name: 'Cloud Load Balancing', sizes: [['Forwarding rule', 0.025]] },
+      lb: { name: 'Cloud Load Balancing', sizes: [['Global forwarding rule', 0.025], ['Regional forwarding rule', 0.025]], pool: { included: 5, extra: 0.01 } },
       cdn: { name: 'Cloud CDN', price: 0.08, fill: 0.01, perMReq: 0.75 },
       queue: { name: 'Pub/Sub', price: 0.04 },
     },
@@ -152,8 +152,27 @@ export function hourlyPrice(cloud, d) {
   return sizeOf(cloud, d)[1]
 }
 
+// Google bills forwarding rules as a pool: the size's price covers the first rules, then each extra adds a little.
+// Rules are assumed to start together; each stretch of time is split evenly across the rules running then.
+// ponytail: one diagram = one project, so multi-project designs read low. Add a project field if that matters.
+function poolCosts(cloud, ds) {
+  const { included, extra } = CLOUDS[cloud].services.lb.pool
+  const hoursOf = d => d.duration * UNITS[d.unit]
+  const costs = ds.map(() => 0)
+  let from = 0
+  for (const to of [...new Set(ds.map(hoursOf))].sort((a, b) => a - b)) {
+    const running = ds.filter(d => hoursOf(d) > from)
+    const rules = running.reduce((sum, d) => sum + d.qty, 0)
+    const perRule = rules && (sizeOf(cloud, ds[0])[1] + Math.max(0, rules - included) * extra) / rules
+    ds.forEach((d, i) => { if (hoursOf(d) > from) costs[i] += perRule * d.qty * (to - from) })
+    from = to
+  }
+  return costs
+}
+
 export function nodeCost(cloud, d) {
   const model = KINDS[d.kind].model
+  if (d.kind === 'lb' && CLOUDS[cloud].services.lb.pool) return poolCosts(cloud, [d])[0]
   if (model === 'hourly') return hourlyPrice(cloud, d) * d.qty * d.duration * UNITS[d.unit]
   if (model === 'usage') return monthlyUsage(CLOUDS[cloud].services[d.kind], d) * monthsOf(d)
   return 0
@@ -174,11 +193,24 @@ export function edgeCost(cloud, a, b, e = {}) {
   return edgeRate(cloud, a, b, e.crossZone) * (e.gb ?? 0) * Math.max(monthsOf(a), monthsOf(b))
 }
 
+// What each node adds to the diagram, by id. Differs from nodeCost only where nodes share a pool.
+export function nodeCosts(cloud, nodes) {
+  const costs = Object.fromEntries(nodes.map(n => [n.id, nodeCost(cloud, n.data)]))
+  if (CLOUDS[cloud].services.lb.pool) {
+    for (const [name] of sizesOf(cloud, 'lb')) {
+      const pool = nodes.filter(n => n.data.kind === 'lb' && sizeOf(cloud, n.data)[0] === name)
+      if (pool.length) poolCosts(cloud, pool.map(n => n.data)).forEach((cost, i) => { costs[pool[i].id] = cost })
+    }
+  }
+  return costs
+}
+
 export function totals(cloud, nodes, edges) {
   const byId = Object.fromEntries(nodes.map(n => [n.id, n.data]))
   const groups = {}
   const add = (g, v) => { groups[g] = (groups[g] ?? 0) + v }
-  for (const n of nodes) add(KINDS[n.data.kind].group, nodeCost(cloud, n.data))
+  const costs = nodeCosts(cloud, nodes)
+  for (const n of nodes) add(KINDS[n.data.kind].group, costs[n.id])
   for (const e of edges) {
     const a = byId[e.source], b = byId[e.target]
     if (a && b) add('Data transfer', edgeCost(cloud, a, b, e.data))
