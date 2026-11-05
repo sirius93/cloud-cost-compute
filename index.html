@@ -30,12 +30,14 @@
     <meta name="twitter:title" content="{{TITLE}}" />
     <meta name="twitter:description" content="{{DESCRIPTION}}" />
     <meta name="twitter:image" content="{{URL}}og-image.png" />
+    <noscript><style>#root, .about-back { display: none; } .about { display: block; max-width: 820px; margin: 0 auto; padding: 0 16px 64px; }</style></noscript>
     <script type="application/ld+json">{{JSON_LD}}</script>
   </head>
   <body>
     <div id="root"></div>
     <noscript><p class="noscript">The interactive calculator needs JavaScript. You can still read how it works below.</p></noscript>
     <article id="about" class="about">
+      <a class="about-back" href="#">← Back to the calculator</a>
       <h1>Cloud Cost Estimator: compare AWS, Azure and Google Cloud costs</h1>
       <p class="lead">Cloud Cost Estimator is a free calculator that shows what a cloud architecture will cost before you build it. Drag services onto a canvas or import your Terraform, set sizes and run times, and see the cost of each service, the total, and the same design priced on AWS, Azure and Google Cloud. There's no sign-up, and it doesn't need access to your cloud account.</p>
 

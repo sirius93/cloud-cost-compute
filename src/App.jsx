@@ -301,6 +301,12 @@ function Editor() {
   const [imported, setImported] = useState(null)
 
   useEffect(() => {
+    const closeAbout = e => { if (e.key === 'Escape' && location.hash === '#about') location.hash = '' }
+    addEventListener('keydown', closeAbout)
+    return () => removeEventListener('keydown', closeAbout)
+  }, [])
+
+  useEffect(() => {
     try { localStorage.setItem(STORE, JSON.stringify({ cloud, nodes, edges })) } catch {}
   }, [cloud, nodes, edges])
 
@@ -345,7 +351,7 @@ function Editor() {
     <CloudCtx.Provider value={cloud}>
       <div className="app">
         <header>
-          <a className="brand" href="#about" title="About this tool">Cloud Cost Estimator</a>
+          <span className="brand">Cloud Cost Estimator</span>
           <div className="seg" role="group" aria-label="Cloud provider">
             {Object.entries(CLOUDS).map(([id, c]) => (
               <button key={id} aria-pressed={cloud === id} onClick={() => setCloud(id)}>{c.name}</button>
