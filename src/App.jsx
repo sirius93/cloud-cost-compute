@@ -345,7 +345,7 @@ function Editor() {
     <CloudCtx.Provider value={cloud}>
       <div className="app">
         <header>
-          <h1>Cloud Cost Estimator</h1>
+          <a className="brand" href="#about" title="About this tool">Cloud Cost Estimator</a>
           <div className="seg" role="group" aria-label="Cloud provider">
             {Object.entries(CLOUDS).map(([id, c]) => (
               <button key={id} aria-pressed={cloud === id} onClick={() => setCloud(id)}>{c.name}</button>
@@ -353,6 +353,7 @@ function Editor() {
           </div>
           <span className="muted">{CLOUDS[cloud].region}</span>
           <span className="spacer" />
+          <a className="link" href="#about">About</a>
           <button className="primary with-icon" onClick={() => setImporting(true)}><FileCode size={14} aria-hidden /> Import Terraform</button>
           <button onClick={() => { setNodes(SAMPLE.nodes); setEdges(SAMPLE.edges); setImported(null) }}>Load sample</button>
           <button onClick={() => { setNodes([]); setEdges([]); setImported(null) }}>Clear</button>

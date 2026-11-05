@@ -3,10 +3,69 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cloud Cost Estimator</title>
+    <title>{{TITLE}}</title>
+    <meta name="description" content="{{DESCRIPTION}}" />
+    <link rel="canonical" href="{{URL}}" />
+    <meta name="author" content="Nandan Kumar" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111418" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="icon" type="image/png" sizes="48x48" href="./favicon-48.png" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Nandan Kumar" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="{{TITLE}}" />
+    <meta property="og:description" content="{{DESCRIPTION}}" />
+    <meta property="og:url" content="{{URL}}" />
+    <meta property="og:image" content="{{URL}}og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Cloud Cost Estimator: a diagram of cloud services connected by wires, with the cost of each service." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@_sirius93_" />
+    <meta name="twitter:creator" content="@_sirius93_" />
+    <meta name="twitter:title" content="{{TITLE}}" />
+    <meta name="twitter:description" content="{{DESCRIPTION}}" />
+    <meta name="twitter:image" content="{{URL}}og-image.png" />
+    <script type="application/ld+json">{{JSON_LD}}</script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript><p class="noscript">The interactive calculator needs JavaScript. You can still read how it works below.</p></noscript>
+    <article id="about" class="about">
+      <h1>Cloud Cost Estimator: compare AWS, Azure and Google Cloud costs</h1>
+      <p class="lead">Cloud Cost Estimator is a free calculator that shows what a cloud architecture will cost before you build it. Drag services onto a canvas or import your Terraform, set sizes and run times, and see the cost of each service, the total, and the same design priced on AWS, Azure and Google Cloud. There's no sign-up, and it doesn't need access to your cloud account.</p>
+
+      <h2>How it works</h2>
+      <ol>
+        <li><strong>Pick a cloud:</strong> AWS, Azure or Google Cloud. You can switch at any time without redrawing.</li>
+        <li><strong>Add services:</strong> drag them from the left panel, or click <em>Import Terraform</em> to build the diagram from your existing code.</li>
+        <li><strong>Configure each one:</strong> set the instance size, quantity, run time in hours, days or months, and usage such as GB stored or requests per month.</li>
+        <li><strong>Wire them together:</strong> each wire carries data transfer, so egress and cross-zone costs are counted.</li>
+        <li><strong>Read the estimate:</strong> see a breakdown by service group and the same diagram priced on all three clouds.</li>
+      </ol>
+
+      <h2>Supported services</h2>
+      {{SERVICES_TABLE}}
+
+      <h2>Example cloud costs per month</h2>
+      <p>A month is counted as 730 hours, so one m5.large at $0.096 an hour costs $0.096 × 730 = $70.08. These figures come from the same price data the calculator uses.</p>
+      {{PRICES_TABLE}}
+      <p class="fine">Approximate on-demand list prices for AWS us-east-1, Azure East US and Google Cloud us-central1. Excludes tax, free tiers and discounts. Check the provider's calculator before committing a budget.</p>
+
+      <h2>Estimate costs from Terraform</h2>
+      <p>Add <code>.tf</code> and <code>.tfvars</code> files, a whole folder, or pasted code. The tool reads them in your browser, without uploading them, and builds an editable diagram with services, sizes, quantities and connections for AWS, Azure and Google Cloud. An import report lists what to check: usage amounts that are placeholders, sizes missing from the price list, and resources it couldn't price.</p>
+
+      <h2>Frequently asked questions</h2>
+      {{FAQ}}
+
+      <footer>
+        <p>Built by <a href="https://nandan.dev/" rel="author">Nandan Kumar</a>. <a href="https://github.com/sirius93/cloud-cost-estimator">Source code on GitHub</a>. <a href="https://github.com/sirius93/cloud-cost-estimator/issues">Report a wrong price</a>. Last updated <time datetime="{{TODAY}}">{{TODAY}}</time>.</p>
+      </footer>
+    </article>
     <script type="module" src="/src/main.jsx"></script>
     <!-- Same analytics as nandan.dev -->
     <script>

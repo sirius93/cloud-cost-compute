@@ -1,0 +1,22 @@
+# Cloud Cost Estimator
+
+> Free browser tool that estimates and compares cloud architecture costs on AWS, Azure and Google Cloud. Users drag services onto a canvas or import Terraform, then set sizes and run times. No sign-up, no backend, and no access to a cloud account is needed.
+
+Built by Nandan Kumar (https://nandan.dev/). Prices are approximate on-demand list prices for one region per cloud (AWS us-east-1, Azure East US, Google Cloud us-central1), entered by hand. Tax, free tiers and discounts are not included, so the results are estimates to confirm with each provider's calculator.
+
+## Links
+
+- [Calculator, how it works and FAQ](https://nandan.dev/cloud-cost-estimator/): The tool, supported services, example prices and frequently asked questions
+- [Source code](https://github.com/sirius93/cloud-cost-estimator): Code, price data and contribution guide
+- [Price data](https://github.com/sirius93/cloud-cost-estimator/blob/main/src/cost.js): All prices and cost formulas
+
+## Capabilities
+
+- Services: virtual machines, serverless containers with sidecars, Kubernetes, functions, managed SQL, Redis, object and block storage, container registry, load balancer, NAT gateway, CDN, message queue and logging
+- Terraform import: .tf and .tfvars files, whole folders or pasted code, read in the browser and never uploaded. Usage amounts start as placeholders, because Terraform doesn't specify them
+- Costs: per service, per wire (data transfer) and in total, with the same diagram priced on all three clouds
+
+## Not supported
+
+- Regions other than the three listed, reserved or committed-use pricing, free tiers, and live price lookups
+- Terraform JSON, module expansion, and for_each counts (flagged in the import report)

@@ -58,6 +58,7 @@ React with [React Flow](https://reactflow.dev/) for the canvas and [Lucide](http
 | [src/cost.check.js](src/cost.check.js) | Assertions for the cost math (`npm test`) |
 | [src/terraform.js](src/terraform.js) | Reads Terraform and builds the diagram: the resource mapping, wiring and layout. No React |
 | [src/terraform.check.js](src/terraform.check.js) | Assertions for the Terraform import (also run by `npm test`) |
+| [src/seo.js](src/seo.js) | Page title, FAQ and structured data, rendered into `index.html` at build time from the real price data |
 | [src/App.jsx](src/App.jsx) | Canvas, palette, settings panel and cost estimate |
 | [src/styles.css](src/styles.css) | Styles, including dark mode |
 
